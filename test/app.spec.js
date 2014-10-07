@@ -92,26 +92,122 @@ describe('Dogs API Specs', function() {
   });
 
   describe('Create', function() {
-    it('should create a dog');
+    it('should create a dog', function(done) {
+      agent
+        .post('/api/dogs')
+        .send({ name: 'Manny', breed: 'spaniel', dob: '2011-10-12T00:00:00.000Z'})
+        .set('Accept', 'application/json')
+        .expect(201)
+        .end(function(err, res) {
+          expect(err).to.be(null);
+
+          expect(res.body._id).to.be.ok();
+          expect(res.body.name).to.be('Manny');
+          expect(res.body.breed).to.be('spaniel');
+          expect(res.body.dob).to.be('2011-10-12T00:00:00.000Z');
+
+          done();
+        });
+    });
 
     describe('Validation', function() {
-      it('should require a name');
-      it('should require a breed');
-      it('should fail if an invalid breed is specified');
-      it('should require a dob');
+      it('should require a name', function(done) {
+        agent
+          .post('/api/dogs')
+          .send({ breed: 'spaniel', dob: '2011-10-12T00:00:00.000Z'})
+          .set('Accept', 'application/json')
+          .expect(400, done);
+      });
+
+      it('should require a breed', function(done) {
+        agent
+          .post('/api/dogs')
+          .send({ name: 'Manny', dob: '2011-10-12T00:00:00.000Z'})
+          .set('Accept', 'application/json')
+          .expect(400, done);
+      });
+
+      it('should fail if an invalid breed is specified', function(done) {
+        agent
+          .post('/api/dogs')
+          .send({ name: 'Manny', breed: 'schnauser', dob: '2011-10-12T00:00:00.000Z'})
+          .set('Accept', 'application/json')
+          .expect(400, done);
+      });
+
+      it('should require a dob', function(done) {
+        agent
+          .post('/api/dogs')
+          .send({ name: 'Manny', breed: 'spaniel' })
+          .set('Accept', 'application/json')
+          .expect(400, done);
+      });
     });
   });
 
   describe('Update', function() {
-    it('should update a dog');
-    it('should return a 404 if the dog cannot be found');
-    it('should return a 404 if the ID is invalid');
+    it('should update a dog', function(done) {
+      agent
+        .put('/api/dogs/' + dogIDs[0])
+        .send({ name: 'Cooper' })
+        .set('Accept', 'application/json')
+        .expect(200)
+        .end(function(err, res) {
+          expect(err).to.be(null);
+
+          expect(res.body._id).to.be.ok();
+          expect(res.body.name).to.be('Cooper');
+          expect(res.body.breed).to.be('corgi');
+          expect(res.body.dob).to.be('2012-04-20T00:00:00.000Z');
+
+          done();
+        });
+    });
+
+    it('should return a 404 if the dog cannot be found', function(done) {
+      agent
+        .put('/api/dogs/' + ObjectId())
+        .expect(404, done);
+    });
+
+    it('should return a 404 if the ID is invalid', function(done) {
+      agent
+        .put('/api/dogs/1')
+        .expect(404, done);
+    });
 
     describe('Validation', function() {
-      it('should require a name');
-      it('should require a breed');
-      it('should fail if an invalid breed is specified');
-      it('should require a dob');
+      it('should require a name', function(done) {
+        agent
+          .put('/api/dogs/' + dogIDs[0])
+          .send({ name: '' })
+          .set('Accept', 'application/json')
+          .expect(400, done);
+      });
+
+      it('should require a breed', function(done) {
+        agent
+          .put('/api/dogs/' + dogIDs[0])
+          .send({ breed: '' })
+          .set('Accept', 'application/json')
+          .expect(400, done);
+      });
+
+      it('should fail if an invalid breed is specified', function(done) {
+        agent
+          .put('/api/dogs/' + dogIDs[0])
+          .send({ breed: 'schnauser' })
+          .set('Accept', 'application/json')
+          .expect(400, done);
+      });
+
+      it('should require a dob', function(done) {
+        agent
+          .put('/api/dogs/' + dogIDs[0])
+          .send({ dob: '' })
+          .set('Accept', 'application/json')
+          .expect(400, done);
+      });
     });
   });
 

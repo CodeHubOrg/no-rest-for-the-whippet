@@ -18,8 +18,16 @@ module.exports = function(app) {
     // Return a 404.
     if(err.name === 'CastError' && err.path === '_id') {
       return res.status(404).json({
-      message: 'Not Found'
+        message: 'Not Found'
       });
+    }
+
+    // If the error is a Mongoose ValidationError,
+    // the client sent invalid data when trying to
+    // create or update a document.
+    // Return a 400.
+    if(err.name === 'ValidationError') {
+      return res.status(400).json(err.errors);
     }
 
     // Otherwise, fallback to an Internal Server Error.
